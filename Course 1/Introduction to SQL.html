@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introduction to SQL</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="intro-to-sql">Intro to SQL</h1>
+<h3 id="query-selection">Query Selection:</h3>
+<p>Keywords:</p>
+<ol>
+<li>SELECT</li>
+<li>FROM</li>
+<li>DISTINCT  ( Unique entries/ records from the columns )</li>
+<li>COUNT ( count the number of rows in one/more columns )
+<blockquote>
+<p>SELECT COUNT(*) FROM table;<br>
+<strong>we can check for total number of rows in a table with this code</strong></p>
+</blockquote>
+</li>
+<li>WHERE (Selective search based on conditions)</li>
+<li>AND (for using more than 1 conditions together , eg WHERE … AND … )</li>
+<li>OR ( for meeting <strong>at least one</strong> of the conditions getting fulfilled, for eg WHERE … OR …  etc. )</li>
+<li>BETWEEN</li>
+<li>IN</li>
+<li>NULL / NOT NULL</li>
+<li>LIKE / NOT LIKE</li>
+<li>AVG()</li>
+<li>MAX()</li>
+<li>SUM()</li>
+<li>AS (aliasing)</li>
+<li>ORDER BY</li>
+<li>GROUP BY</li>
+<li>HAVING</li>
+<li>LIMIT (limit the number of rows returned)</li>
+</ol>
+<h2 id="important-points">Important Points</h2>
+<ul>
+<li>It is also common to combine <code>COUNT</code> with <code>DISTINCT</code> to count the number of distinct values in a column.
+<blockquote>
+<p>SELECT COUNT( DISTINCT column_name ) FROM table;</p>
+</blockquote>
+</li>
+<li><strong>Important: in PostgreSQL (the version of SQL we’re using), you must use single quotes with  <code>WHERE</code>.</strong></li>
+<li>You can link as many <code>AND</code> or <code>OR</code> after <code>WHERE</code> in the conditions. There is no limit.</li>
+<li>Checking for ranges like (&lt;= AND &gt;= or etc.) is very common, so in SQL the  <code>BETWEEN</code>  keyword provides a useful shorthand for filtering values within a specified range. This query is equivalent to the one above:</li>
+</ul>
+<pre><code>SELECT title
+FROM films
+WHERE release_year
+BETWEEN 1994 AND 2000;
+
+</code></pre>
+<p>It’s important to remember that  <code>BETWEEN</code>  is  <em>inclusive</em>, meaning the beginning and end values are included in the results!</p>
+<ul>
+<li>The  <code>IN</code>  operator allows you to specify multiple values in a  <code>WHERE</code>  clause, making it easier and quicker to specify multiple  <code>OR</code>  conditions! Neat, right?</li>
+</ul>
+<p>So, the above example would become simply:</p>
+<pre><code>SELECT name
+FROM kids
+WHERE age IN (2, 4, 6, 8, 10);
+</code></pre>
+<ul>
+<li>Make sure to always put the <code>ORDER BY</code> clause at the end of your query. You can’t sort values that you haven’t calculated yet!</li>
+</ul>
+<hr>
+<h3 id="filtering-results">Filtering results</h3>
+<p>Congrats on finishing the first chapter! You now know how to select columns and perform basic counts. This chapter will focus on filtering your results.</p>
+<p>In SQL, the  <code>WHERE</code>  keyword allows you to filter based on both text and numeric values in a table. There are a few different comparison operators you can use:</p>
+<ul>
+<li><code>=</code>  equal</li>
+<li><code>&lt;&gt;</code>  not equal</li>
+<li><code>&lt;</code>  less than</li>
+<li><code>&gt;</code>  greater than</li>
+<li><code>&lt;=</code>  less than or equal to</li>
+<li><code>&gt;=</code>  greater than or equal to</li>
+</ul>
+<p>For example, you can filter text records such as  <code>title</code>. The following code returns all films with the title  <code>'Metropolis'</code>:</p>
+<pre><code>SELECT title
+FROM films
+WHERE title = 'Metropolis';
+
+</code></pre>
+<p>Notice that the  <code>WHERE</code>  clause always comes after the  <code>FROM</code>  statement!</p>
+<p><strong>Note that in this course we will use  <code>&lt;&gt;</code>  and not  <code>!=</code>  for the not equal operator, as per the SQL standard.</strong></p>
+<hr>
+<h3 id="introduction-to-null-and-is-null">Introduction to NULL and IS NULL</h3>
+<p>In SQL,  <code>NULL</code>  represents a missing or unknown value. You can check for  <code>NULL</code>  values using the expression  <code>IS NULL</code>. For example, to count the number of missing birth dates in the  <code>people</code>  table:</p>
+<pre><code>SELECT COUNT(*)
+FROM people
+WHERE birthdate IS NULL;
+
+</code></pre>
+<p>As you can see,  <code>IS NULL</code>  is useful when combined with  <code>WHERE</code>  to figure out what data you’re missing.</p>
+<p>Sometimes, you’ll want to filter out missing values so you only get results which are not  <code>NULL</code>. To do this, you can use the  <code>IS NOT NULL</code>  operator.</p>
+<p>For example, this query gives the names of all people whose birth dates are  <em>not</em>  missing in the  <code>people</code>  table.</p>
+<pre><code>SELECT name
+FROM people
+WHERE birthdate IS NOT NULL;
+
+</code></pre>
+<hr>
+<h3 id="like-and-not-like">LIKE and NOT LIKE</h3>
+<p>As you’ve seen, the  <code>WHERE</code>  clause can be used to filter text data. However, so far you’ve only been able to filter by specifying the exact text you’re interested in. In the real world, often you’ll want to search for a  <em>pattern</em>  rather than a specific text string.</p>
+<p>In SQL, the  <code>LIKE</code>  operator can be used in a  <code>WHERE</code>  clause to search for a pattern in a column. To accomplish this, you use something called a  <em>wildcard</em>  as a placeholder for some other values. There are two wildcards you can use with  <code>LIKE</code>:</p>
+<p>The  <code>%</code>  wildcard will match zero, one, or many characters in text. For example, the following query matches companies like  <code>'Data'</code>,  <code>'DataC'</code>  <code>'DataCamp'</code>,  <code>'DataMind'</code>, and so on:</p>
+<pre><code>SELECT name
+FROM companies
+WHERE name LIKE 'Data%';
+
+</code></pre>
+<p>The  <code>_</code>  wildcard will match a  <em>single</em>  character. For example, the following query matches companies like  <code>'DataCamp'</code>,  <code>'DataComp'</code>, and so on:</p>
+<pre><code>SELECT name
+FROM companies
+WHERE name LIKE 'DataC_mp';
+
+</code></pre>
+<p>You can also use the  <code>NOT LIKE</code>  operator to find records that  <em>don’t</em>  match the pattern you specify.</p>
+<hr>
+<h3 id="aggregate-functions">Aggregate functions</h3>
+<p>Often, you will want to perform some calculation on the data in a database. SQL provides a few functions, called  <em>aggregate functions</em>, to help you out with this.</p>
+<p>For example,</p>
+<pre><code>SELECT AVG(budget)
+FROM films;
+
+</code></pre>
+<p>gives you the average value from the  <code>budget</code>  column of the  <code>films</code>  table. Similarly, the  <code>MAX</code>  function returns the highest budget:</p>
+<pre><code>SELECT MAX(budget)
+FROM films;
+
+</code></pre>
+<p>The  <code>SUM</code>  function returns the result of adding up the numeric values in a column:</p>
+<pre><code>SELECT SUM(budget)
+FROM films;
+
+</code></pre>
+<p>You can probably guess what the  <code>MIN</code>  function does! Now it’s your turn to try out some SQL functions.</p>
+<hr>
+<h3 id="a-note-on-arithmetic">A note on arithmetic</h3>
+<p>In addition to using aggregate functions, you can perform basic arithmetic with symbols like  <code>+</code>,  <code>-</code>,  <code>*</code>, and  <code>/</code>.</p>
+<p>So, for example, this gives a result of  <code>12</code>:</p>
+<pre><code>SELECT (4 * 3);
+
+</code></pre>
+<p>However, the following gives a result of  <code>1</code>:</p>
+<pre><code>SELECT (4 / 3);
+
+</code></pre>
+<p>What’s going on here?</p>
+<p>SQL assumes that if you divide an integer by an integer, you want to get an integer back. So be careful when dividing!</p>
+<p>If you want more precision when dividing, you can add decimal places to your numbers. For example,</p>
+<pre><code>SELECT (4.0 / 3.0) AS result;
+
+</code></pre>
+<p>gives you the result you would expect:  <code>1.333</code>.</p>
+<hr>
+<h3 id="its-as-simple-as-aliasing">It’s AS simple AS aliasing</h3>
+<p>You may have noticed in the first exercise of this chapter that the column name of your result was just the name of the function you used. For example,</p>
+<pre><code>SELECT MAX(budget)
+FROM films;
+
+</code></pre>
+<p>gives you a result with one column, named  <code>max</code>. But what if you use two functions like this?</p>
+<pre><code>SELECT MAX(budget), MAX(duration)
+FROM films;
+
+</code></pre>
+<p>Well, then you’d have two columns named  <code>max</code>, which isn’t very useful!</p>
+<p>To avoid situations like this, SQL allows you to do something called  <em>aliasing</em>. Aliasing simply means you assign a temporary name to something. To alias, you use the  <code>AS</code>  keyword, which you’ve already seen earlier in this course.</p>
+<p>For example, in the above example we could use aliases to make the result clearer:</p>
+<pre><code>SELECT MAX(budget) AS max_budget,
+       MAX(duration) AS max_duration
+FROM films;
+
+</code></pre>
+<p>Aliases are helpful for making results more readable!</p>
+<hr>
+<h3 id="order-by">ORDER BY</h3>
+<p>Congratulations on making it this far! You now know how to select and filter your results.</p>
+<p>In this chapter you’ll learn how to sort and group your results to gain further insight. Let’s go!</p>
+<p>In SQL, the  <code>ORDER BY</code>  keyword is used to sort results in ascending or descending order according to the values of one or more columns.</p>
+<p>By default  <code>ORDER BY</code>  will sort in ascending order. If you want to sort the results in descending order, you can use the  <code>DESC</code>  keyword. For example,</p>
+<pre><code>SELECT title
+FROM films
+ORDER BY release_year DESC;
+
+</code></pre>
+<p>gives you the titles of films sorted by release year, from newest to oldest.</p>
+<p><strong>NOTE</strong> :<br>
+<code>ORDER BY</code>  can also be used to sort on multiple columns. It will sort by the first column specified, then sort by the next, then the next, and so on. For example,</p>
+<pre><code>SELECT birthdate, name
+FROM people
+ORDER BY birthdate, name;
+
+</code></pre>
+<p>sorts on birth dates first (oldest to newest) and then sorts on the names in alphabetical order.  <strong>The order of columns is important!</strong></p>
+<hr>
+<h3 id="group-by">GROUP BY</h3>
+<p>Now you know how to sort results! Often you’ll need to aggregate results. For example, you might want to count the number of male and female employees in your company. Here, what you want is to group all the males together and count them, and group all the females together and count them. In SQL,  <code>GROUP BY</code>  allows you to group a result by one or more columns, like so:</p>
+<pre><code>SELECT sex, count(*)
+FROM employees
+GROUP BY sex;
+
+</code></pre>
+<p>This might give, for example:</p>
+
+<table>
+<thead>
+<tr>
+<th>Sex</th>
+<th>count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>male</td>
+<td>15</td>
+</tr>
+<tr>
+<td>female</td>
+<td>19</td>
+</tr>
+</tbody>
+</table><p>Commonly,  <code>GROUP BY</code>  is used with  <em>aggregate functions</em>  like  <code>COUNT()</code>  or  <code>MAX()</code>. Note that  <code>GROUP BY</code>  always goes after the  <code>FROM</code>  clause!</p>
+<p><strong>A word of warning:</strong><br>
+SQL will return an <em>error</em> if you try to  <code>SELECT</code>  a field that is not in your  <code>GROUP BY</code>  clause without using it to calculate some kind of value about the entire group.</p>
+<p>Note that you can combine  <code>GROUP BY</code>  with  <code>ORDER BY</code>  to group your results, calculate something about them, and then order your results. For example,</p>
+<pre><code>SELECT sex, count(*)
+FROM employees
+GROUP BY sex
+ORDER BY count DESC;
+</code></pre>
+<hr>
+<h3 id="having-a-great-time">HAVING a great time</h3>
+<p>In SQL, aggregate functions can’t be used in  <code>WHERE</code>  clauses. For example, the following query is invalid:</p>
+<pre><code>SELECT release_year
+FROM films
+GROUP BY release_year
+WHERE COUNT(title) &gt; 10;
+
+</code></pre>
+<p>This means that if you want to filter based on the result of an aggregate function, you need another way! That’s where the  <code>HAVING</code>  clause comes in. For example,</p>
+<pre><code>SELECT release_year
+FROM films
+GROUP BY release_year
+HAVING COUNT(title) &gt; 10;
+
+</code></pre>
+<p>shows only those years in which more than 10 films were released.</p>
+<hr>
+</div>
+</body>
+
+</html>
